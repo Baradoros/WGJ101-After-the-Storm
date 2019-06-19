@@ -9,6 +9,7 @@ public class CharacterControls : MonoBehaviour
     private GameObject heldObject;
     private FixedJoint joint;
     public float throwPower;
+    public float throwPowerDrunk;
     // Start is called before the first frame update
     void Start()
     {
@@ -35,17 +36,28 @@ public class CharacterControls : MonoBehaviour
                     obj.transform.position = handLocation.transform.position;
                     Rigidbody rb = obj.GetComponent<Rigidbody>();
                     rb.useGravity = false;
+                    if(obj.gameObject.tag == "Drunk")
+                    {
+                        rb.isKinematic = true;
+                    }
                     heldObject = obj.gameObject;
-                    joint = obj.gameObject.AddComponent<FixedJoint>();
-                    joint.connectedBody = handLocation.gameObject.GetComponent<Rigidbody>();
-                    joint.enableCollision = false;
+                    if (obj.gameObject.tag != "Drunk")
+                    {
+                        joint = obj.gameObject.AddComponent<FixedJoint>();
+                        joint.connectedBody = handLocation.gameObject.GetComponent<Rigidbody>();
+                        joint.enableCollision = false;
+                    }
                     obj.transform.SetParent(handLocation.transform);
                 }
                 else if(heldObject != null)
                 {
                     Rigidbody rb = heldObject.GetComponent<Rigidbody>();
                     rb.useGravity = true;
-                    Destroy(joint);
+                    rb.isKinematic = false;
+                    if (joint != null)
+                    {
+                        Destroy(joint);
+                    }
                     heldObject.transform.SetParent(null);
                     heldObject = null;
 
@@ -62,8 +74,19 @@ public class CharacterControls : MonoBehaviour
             {
                 Rigidbody rb = heldObject.GetComponent<Rigidbody>();
                 rb.useGravity = true;
-                rb.AddForce(main.transform.forward * throwPower);
-                Destroy(joint);
+                rb.isKinematic = false;
+                if (heldObject.gameObject.tag == "Drunk")
+                {
+                    rb.AddForce(main.transform.forward * throwPowerDrunk);
+                }
+                else
+                {
+                    rb.AddForce(main.transform.forward * throwPower);
+                }
+                if (joint != null)
+                {
+                    Destroy(joint);
+                }
                 heldObject.transform.SetParent(null);
                 heldObject = null;
                 Debug.Log("YEET!");
